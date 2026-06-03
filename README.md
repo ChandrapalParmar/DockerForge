@@ -1,6 +1,21 @@
 # DockerForge
 
-DockerForge is a MERN-based Docker Automation Platform that automatically analyzes a GitHub repository, generates a Dockerfile, builds a Docker image, runs a container, and verifies container health.
+DockerForge is a MERN-based Docker Automation Platform that automatically analyzes a GitHub repository, generates a Dockerfile, builds a Docker image, runs a container, verifies container health, and checks whether the application responds successfully.
+
+---
+
+## Problem Statement
+
+Build a tool called DockerForge with the following flow:
+
+1. Accept a public GitHub repository URL from the user.
+2. Clone the repository and scan its file structure.
+3. Generate a Dockerfile based on repository analysis.
+4. Run `docker build` and capture the output.
+5. If build fails, analyze the error and retry (up to 3 attempts).
+6. Run the generated Docker container.
+7. Verify the container starts and responds correctly.
+8. Display the final result in the UI.
 
 ---
 
@@ -13,37 +28,45 @@ DockerForge is a MERN-based Docker Automation Platform that automatically analyz
 * Generate Dockerfile Automatically
 * Build Docker Image
 * Capture Docker Build Logs
+* Retry Failed Builds (Max 3 Attempts)
+* Auto-Fix Common Dockerfile Issues
 * Run Docker Container
 * Verify Container Health
-* Retry Build Process (up to 3 attempts)
-* Display Build and Runtime Results in UI
+* Verify Application Response
+* Display Build & Runtime Results in UI
+* Display Container Logs
 * Handle Invalid Repository URLs
+* Handle Build Failures Gracefully
 
 ---
 
 ## Architecture
 
+```text
 User
-↓
+  ↓
 React Frontend
-↓
+  ↓
 Node.js / Express Backend
-↓
+  ↓
 Clone GitHub Repository
-↓
+  ↓
 Repository Analysis
-↓
+  ↓
 Dockerfile Generation
-↓
+  ↓
 Docker Build
-↓
+  ↓
+Retry Failed Builds (Max 3 Attempts)
+  ↓
 Docker Run
-↓
-Health Check
-↓
+  ↓
+Container Health Check
+  ↓
+Application Response Verification
+  ↓
 Result Display
-
----
+```
 
 ## Tech Stack
 
@@ -72,37 +95,25 @@ Result Display
 
 ## Project Structure
 
+```text
 DockerForge/
 
 ├── frontend/
-
-│ ├── src/
-
-│ ├── public/
-
-│ └── package.json
-
+│   ├── src/
+│   ├── public/
+│   └── package.json
 │
-
 ├── backend/
-
-│ ├── controllers/
-
-│ ├── routes/
-
-│ ├── services/
-
-│ ├── tempRepos/
-
-│ ├── app.js
-
-│ ├── server.js
-
-│ └── package.json
-
+│   ├── controllers/
+│   ├── routes/
+│   ├── services/
+│   ├── tempRepos/
+│   ├── app.js
+│   ├── server.js
+│   └── package.json
 │
-
 └── README.md
+```
 
 ---
 
@@ -114,7 +125,9 @@ User enters a GitHub repository URL.
 
 Example:
 
+```text
 https://github.com/expressjs/express
+```
 
 ### Step 2
 
@@ -124,18 +137,22 @@ Backend clones the repository into a temporary directory.
 
 Repository files are analyzed.
 
-Important files:
+Common files detected:
 
-* package.json
-* server.js
-* index.js
+```text
+package.json
+server.js
+index.js
+app.js
+```
 
 ### Step 4
 
-A Dockerfile is generated automatically.
+Dockerfile is generated automatically.
 
 Example:
 
+```dockerfile
 FROM node:22
 
 WORKDIR /app
@@ -149,26 +166,45 @@ COPY . .
 EXPOSE 3000
 
 CMD ["npm","start"]
+```
 
 ### Step 5
 
 Docker image is built.
 
+```bash
 docker build -t image-name .
+```
 
 ### Step 6
 
-Docker container is started.
+If build fails, DockerForge retries automatically.
 
-docker run -d image-name
+Maximum retries:
+
+```text
+3 Attempts
+```
 
 ### Step 7
 
-Container health is verified.
+Container is started.
+
+```bash
+docker run -d image-name
+```
 
 ### Step 8
 
-Results are returned to the frontend.
+Container health is verified.
+
+### Step 9
+
+Application response is verified.
+
+### Step 10
+
+Results are displayed in the frontend UI.
 
 ---
 
@@ -176,25 +212,32 @@ Results are returned to the frontend.
 
 ### Generate Dockerfile
 
-POST
+**POST**
 
+```text
 /api/generate
+```
 
-Request:
+### Request
 
+```json
 {
-"githubUrl": "https://github.com/expressjs/express"
+  "githubUrl": "https://github.com/expressjs/express"
 }
+```
 
-Response:
+### Response
 
+```json
 {
-"success": true,
-"dockerfile": "...",
-"buildResult": {},
-"runResult": {},
-"healthResult": {}
+  "success": true,
+  "detectedFiles": [],
+  "dockerfile": "...",
+  "buildResult": {},
+  "runResult": {},
+  "healthResult": {}
 }
+```
 
 ---
 
@@ -202,31 +245,45 @@ Response:
 
 ### Clone Project
 
-git clone <repository-url>
+```bash
+git clone https://github.com/ChandrapalParmar/DockerForge.git
+```
 
-### Backend Setup
+---
 
+## Backend Setup
+
+```bash
 cd backend
 
 npm install
 
 npm start
+```
 
 Backend runs on:
 
+```text
 http://localhost:5000
+```
 
-### Frontend Setup
+---
 
+## Frontend Setup
+
+```bash
 cd frontend
 
 npm install
 
 npm start
+```
 
 Frontend runs on:
 
+```text
 http://localhost:3000
+```
 
 ---
 
@@ -234,57 +291,99 @@ http://localhost:3000
 
 ### Successful Tests
 
-1. expressjs/express
+#### Express
+
+```text
+https://github.com/expressjs/express
+```
+
+Result:
 
 * Dockerfile Generated
-* Image Built
+* Docker Image Built
 * Container Started
 * Health Check Passed
 
-2. bezkoder/node-express-mongodb
+---
+
+#### Node Express MongoDB
+
+```text
+https://github.com/bezkoder/node-express-mongodb
+```
+
+Result:
 
 * Dockerfile Generated
-* Image Built
+* Docker Image Built
 * Container Started
 * Health Check Passed
 
-3. gothinkster/node-express-realworld-example-app
+Note:
+
+* Runtime verification may fail if MongoDB service is unavailable.
+
+---
+
+#### RealWorld Express Example
+
+```text
+https://github.com/gothinkster/node-express-realworld-example-app
+```
+
+Result:
 
 * Dockerfile Generated
-* Image Built
+* Docker Image Built
 * Container Started
 * Health Check Passed
+
+---
 
 ### Failure Handling Tests
 
-1. Invalid Repository
+#### Invalid Repository
 
+```text
 https://github.com/abcxyz123456/notfound
+```
 
 Result:
 
+```text
 Repository Not Found
+```
 
-2. Non-Runnable Repository
+---
 
-https://github.com/facebook/create-react-app
+#### Monorepo Repository
+
+```text
+https://github.com/ChandrapalParmar/DockerForge
+```
 
 Result:
 
-Container Startup Failure Detected
+```text
+Build Failure Detected
+Monorepo Limitation Identified
+```
 
 ---
 
 ## Error Handling
 
-The system handles:
+DockerForge currently handles:
 
 * Invalid GitHub URLs
 * Repository Clone Failures
 * Docker Build Failures
 * Container Startup Failures
 * Missing Entry Files
+* Missing Start Script
+* Missing index.js
 * Health Check Failures
+* Runtime Verification Failures
 
 ---
 
@@ -298,14 +397,22 @@ Not fully supported:
 * Java Projects
 * .NET Projects
 * Go Projects
+* Monorepo Structures
+* Projects requiring external databases
+* Complex microservice architectures
+* Prisma projects requiring additional setup commands
 
 ---
 
 ## Future Enhancements
 
-* AI-powered Dockerfile Generation
+* AI-Powered Dockerfile Generation
 * Multi-Language Support
-* Automatic Dockerfile Repair
+* Monorepo Detection Support
+* Automatic Port Detection
+* Database Dependency Detection
+* Prisma Generate Support
+* Multi-Stage Docker Builds
 * Container Log Analysis
 * Kubernetes Deployment Support
 * CI/CD Integration
@@ -316,24 +423,24 @@ Not fully supported:
 
 Add screenshots here:
 
-1. Home Page
-2. Dockerfile Generation
-3. Build Logs
-4. Container Status
-5. Health Check
+* Home Page
+* Dockerfile Generation
+* Build Logs
+* Container Status
+* Health Check
+* Response Verification
 
 ---
 
 ## Author
 
-Chandrapal Parmar
+**Chandrapal Parmar**
 
-MERN Stack Developer
-
-NIT Kurukshetra
+* MERN Stack Developer
+* NIT Kurukshetra
 
 ---
 
 ## License
 
-This project is created for educational and assessment purposes.
+This project was created for educational and assessment purposes.
