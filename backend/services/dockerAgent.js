@@ -19,6 +19,9 @@ require("./runDocker");
 const retryBuild =
 require("./retryBuild");
 
+const verifyResponse =
+require("./verifyResponse");
+
 
 async function dockerAgent(githubUrl) {
 
@@ -54,6 +57,7 @@ const buildResult =
 await retryBuild(
     buildDocker,
     repoPath,
+    dockerContent,
     3
 );
 
@@ -73,11 +77,24 @@ if (buildResult.success) {
             r => setTimeout(r, 5000)
         );
 
-        healthResult =
-            await checkContainer(
-                runResult.containerId
-            );
+       healthResult =
+await checkContainer(
+    runResult.containerId
+);
 
+if (
+    healthResult.healthy
+) {
+
+    const responseCheck =
+        await verifyResponse();
+
+    healthResult.responding =
+        responseCheck.healthy;
+
+    healthResult.statusCode =
+        responseCheck.status;
+}
         if (
             !healthResult.healthy
         ) {

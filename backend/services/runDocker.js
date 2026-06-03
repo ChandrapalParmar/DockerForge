@@ -5,7 +5,7 @@ function runDocker(imageName) {
     return new Promise((resolve) => {
 
         exec(
-            `docker run -d -P ${imageName}`,
+            `docker run -d -p 3000:3000 ${imageName}`,
             (error, stdout, stderr) => {
 
                 resolve({

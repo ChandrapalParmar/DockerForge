@@ -179,6 +179,19 @@ function App() {
           result.buildResult?.attempts || 1
         }
       </p>
+      <h2>
+Response Check
+</h2>
+
+<p>
+{
+ result.healthResult?.responding
+ ?
+ "✅ Application Responding"
+ :
+ "❌ No Response"
+}
+</p>
     </>
   )
 }

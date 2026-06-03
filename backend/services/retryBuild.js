@@ -1,37 +1,52 @@
+const fs = require("fs");
+const path = require("path");
+const fixDockerfile =
+require("./fixDockerfile");
+
 async function retryBuild(
- buildFunction,
- repoPath,
- maxAttempts = 3
-){
+    buildDocker,
+    repoPath,
+    dockerfileContent,
+    maxAttempts = 3
+) {
 
- let attempts = 0;
+    let attempts = 0;
+    let result;
 
- let result;
+    while (attempts < maxAttempts) {
 
- while(
-  attempts < maxAttempts
- ){
+        attempts++;
 
-  attempts++;
+        result =
+            await buildDocker(repoPath);
 
-  result =
-   await buildFunction(
-    repoPath
-   );
+        if (result.success) {
 
-  if(result.success){
+            result.attempts =
+                attempts;
 
-   result.attempts =
-    attempts;
+            return result;
+        }
 
-   return result;
-  }
- }
+        dockerfileContent =
+            fixDockerfile(
+                dockerfileContent,
+                result.logs
+            );
 
- result.attempts =
-  attempts;
+        fs.writeFileSync(
+            path.join(
+                repoPath,
+                "Dockerfile"
+            ),
+            dockerfileContent
+        );
+    }
 
- return result;
+    result.attempts =
+        attempts;
+
+    return result;
 }
 
 module.exports =
