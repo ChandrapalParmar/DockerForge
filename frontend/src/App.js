@@ -87,6 +87,20 @@ function App() {
         </h3>
       )}
 
+      {
+  result?.error && (
+    <div>
+      <hr />
+
+      <h2>Error</h2>
+
+      <p style={{color:"red"}}>
+        {result.error}
+      </p>
+    </div>
+  )
+}
+
       {result && (
 
         <div>
@@ -111,25 +125,24 @@ function App() {
           </h2>
 
           <p>
-            {
-              result.buildResult.success
-                ? "✅ Success"
-                : "❌ Failed"
-            }
-          </p>
-
+{
+  result.buildResult?.success
+    ? "✅ Success"
+    : "❌ Failed"
+}
+</p>
           <h2>
             Build Logs
           </h2>
 
           <textarea
-            rows="20"
-            cols="120"
-            value={
-              result.buildResult.logs
-            }
-            readOnly
-          />
+  rows="20"
+  cols="120"
+  value={
+    result.buildResult?.logs || ""
+  }
+  readOnly
+/>
 
           {
             result.runResult &&
@@ -160,6 +173,12 @@ function App() {
         </div>
 
       )}{
+
+
+
+
+
+
   result && (
     <>
       <h2>Health Check</h2>
@@ -179,19 +198,6 @@ function App() {
           result.buildResult?.attempts || 1
         }
       </p>
-      <h2>
-Response Check
-</h2>
-
-<p>
-{
- result.healthResult?.responding
- ?
- "✅ Application Responding"
- :
- "❌ No Response"
-}
-</p>
     </>
   )
 }

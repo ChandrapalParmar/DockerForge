@@ -1,154 +1,96 @@
 # DockerForge
 
-DockerForge is a MERN-based Docker Automation Platform that automatically analyzes a GitHub repository, generates a Dockerfile, builds a Docker image, runs a container, verifies container health, and checks whether the application responds successfully.
+DockerForge is a Docker Automation Platform that analyzes a public GitHub repository, generates a Dockerfile, builds a Docker image, runs a container, captures build/runtime logs, performs health verification, and displays the results through a web interface.
 
 ---
 
-## Problem Statement
+# Overview
 
-Build a tool called DockerForge with the following flow:
+The goal of DockerForge is to automate the process of containerizing existing GitHub repositories.
 
-1. Accept a public GitHub repository URL from the user.
-2. Clone the repository and scan its file structure.
-3. Generate a Dockerfile based on repository analysis.
-4. Run `docker build` and capture the output.
-5. If build fails, analyze the error and retry (up to 3 attempts).
-6. Run the generated Docker container.
-7. Verify the container starts and responds correctly.
-8. Display the final result in the UI.
+The system:
 
----
-
-## Features
-
-* Accept GitHub Repository URL
-* Clone Repository Automatically
-* Scan Repository Structure
-* Detect Node.js Applications
-* Generate Dockerfile Automatically
-* Build Docker Image
-* Capture Docker Build Logs
-* Retry Failed Builds (Max 3 Attempts)
-* Auto-Fix Common Dockerfile Issues
-* Run Docker Container
-* Verify Container Health
-* Verify Application Response
-* Display Build & Runtime Results in UI
-* Display Container Logs
-* Handle Invalid Repository URLs
-* Handle Build Failures Gracefully
+* Accepts a public GitHub repository URL
+* Clones and analyzes the repository
+* Generates a Dockerfile automatically
+* Builds a Docker image
+* Runs the generated container
+* Captures build and runtime logs
+* Performs health verification
+* Retries failed builds (up to 3 attempts)
+* Displays results in the UI
 
 ---
 
-## Architecture
+# Architecture
 
 ```text
 User
-  ↓
+  │
+  ▼
 React Frontend
-  ↓
-Node.js / Express Backend
-  ↓
-Clone GitHub Repository
-  ↓
-Repository Analysis
-  ↓
-Dockerfile Generation
-  ↓
-Docker Build
-  ↓
-Retry Failed Builds (Max 3 Attempts)
-  ↓
-Docker Run
-  ↓
-Container Health Check
-  ↓
-Application Response Verification
-  ↓
+  │
+  ▼
+Express Backend API
+  │
+  ▼
+Git Repository Cloner
+  │
+  ▼
+Repository Scanner
+  │
+  ▼
+Dockerfile Generator
+  │
+  ▼
+Docker Build Engine
+  │
+  ▼
+Retry Engine (Max 3 Attempts)
+  │
+  ▼
+Docker Runtime
+  │
+  ▼
+Health Verification
+  │
+  ▼
 Result Display
 ```
 
-## Tech Stack
+---
 
-### Frontend
+# Features
 
-* React.js
-* Axios
-
-### Backend
-
-* Node.js
-* Express.js
-
-### Docker
-
-* Docker Engine
-* Docker CLI
-
-### Utilities
-
-* simple-git
-* fs-extra
-* child_process
+* GitHub Repository URL Input
+* Automatic Repository Cloning
+* Repository Structure Analysis
+* Dockerfile Generation
+* Docker Image Build
+* Build Log Capture
+* Docker Container Execution
+* Runtime Log Capture
+* Health Verification
+* Build Retry Mechanism (3 Attempts)
+* Common Dockerfile Error Fixes
+* Frontend Dashboard
+* Error Handling and Reporting
 
 ---
 
-## Project Structure
+# Dockerfile Generation Strategy
 
-```text
-DockerForge/
+DockerForge uses repository inspection and rule-based analysis.
 
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
-│
-├── backend/
-│   ├── controllers/
-│   ├── routes/
-│   ├── services/
-│   ├── tempRepos/
-│   ├── app.js
-│   ├── server.js
-│   └── package.json
-│
-└── README.md
-```
+The system scans:
 
----
+* package.json
+* package-lock.json
+* start scripts
+* main entry file
+* repository structure
 
-## Workflow
-
-### Step 1
-
-User enters a GitHub repository URL.
-
-Example:
-
-```text
-https://github.com/expressjs/express
-```
-
-### Step 2
-
-Backend clones the repository into a temporary directory.
-
-### Step 3
-
-Repository files are analyzed.
-
-Common files detected:
-
-```text
-package.json
-server.js
-index.js
-app.js
-```
-
-### Step 4
-
-Dockerfile is generated automatically.
+Based on detected files and scripts, DockerForge generates an appropriate Dockerfile.
 
 Example:
 
@@ -168,7 +110,111 @@ EXPOSE 3000
 CMD ["npm","start"]
 ```
 
-### Step 5
+Generated Dockerfiles are validated through actual Docker build and runtime execution.
+
+---
+
+# Retry Mechanism
+
+If a Docker build fails:
+
+1. Build logs are captured.
+2. Common issues are detected.
+3. Dockerfile fixes are applied.
+4. Build is retried.
+5. Maximum retry count = 3.
+
+Currently supported fixes:
+
+* Missing index.js
+* Missing start script
+* Incorrect entry file selection
+
+---
+
+# Technology Stack
+
+## Frontend
+
+* React.js
+* Axios
+
+## Backend
+
+* Node.js
+* Express.js
+
+## Docker
+
+* Docker Engine
+* Docker CLI
+
+## Utilities
+
+* simple-git
+* fs-extra
+* child_process
+
+---
+
+# Project Structure
+
+```text
+DockerForge
+
+├── frontend
+│   ├── src
+│   ├── public
+│   └── package.json
+│
+├── backend
+│   ├── controllers
+│   ├── routes
+│   ├── services
+│   ├── tempRepos
+│   ├── app.js
+│   ├── server.js
+│   └── package.json
+│
+└── README.md
+```
+
+---
+
+# Workflow
+
+## Step 1
+
+User enters a GitHub repository URL.
+
+Example:
+
+```text
+https://github.com/bezkoder/node-express-mongodb
+```
+
+## Step 2
+
+Repository is cloned locally.
+
+## Step 3
+
+Repository files are scanned and analyzed.
+
+Detected files may include:
+
+```text
+package.json
+server.js
+index.js
+app.js
+```
+
+## Step 4
+
+Dockerfile is generated automatically.
+
+## Step 5
 
 Docker image is built.
 
@@ -176,62 +222,55 @@ Docker image is built.
 docker build -t image-name .
 ```
 
-### Step 6
+## Step 6
 
-If build fails, DockerForge retries automatically.
-
-Maximum retries:
+If build fails:
 
 ```text
-3 Attempts
+Retry up to 3 times
 ```
 
-### Step 7
+## Step 7
 
-Container is started.
+Container is executed.
 
 ```bash
 docker run -d image-name
 ```
 
-### Step 8
+## Step 8
 
 Container health is verified.
 
-### Step 9
-
-Application response is verified.
-
-### Step 10
+## Step 9
 
 Results are displayed in the frontend UI.
 
 ---
 
-## API Endpoint
+# API Endpoint
 
-### Generate Dockerfile
+## Generate Dockerfile
 
-**POST**
+POST
 
 ```text
 /api/generate
 ```
 
-### Request
+Request:
 
 ```json
 {
-  "githubUrl": "https://github.com/expressjs/express"
+  "githubUrl": "https://github.com/bezkoder/node-express-mongodb"
 }
 ```
 
-### Response
+Response:
 
 ```json
 {
   "success": true,
-  "detectedFiles": [],
   "dockerfile": "...",
   "buildResult": {},
   "runResult": {},
@@ -241,9 +280,9 @@ Results are displayed in the frontend UI.
 
 ---
 
-## Installation
+# Installation
 
-### Clone Project
+## Clone Repository
 
 ```bash
 git clone https://github.com/ChandrapalParmar/DockerForge.git
@@ -261,7 +300,7 @@ npm install
 npm start
 ```
 
-Backend runs on:
+Backend:
 
 ```text
 http://localhost:5000
@@ -279,7 +318,7 @@ npm install
 npm start
 ```
 
-Frontend runs on:
+Frontend:
 
 ```text
 http://localhost:3000
@@ -287,26 +326,9 @@ http://localhost:3000
 
 ---
 
-## Tested Repositories
+# Tested Repositories
 
-### Successful Tests
-
-#### Express
-
-```text
-https://github.com/expressjs/express
-```
-
-Result:
-
-* Dockerfile Generated
-* Docker Image Built
-* Container Started
-* Health Check Passed
-
----
-
-#### Node Express MongoDB
+## Repository 1
 
 ```text
 https://github.com/bezkoder/node-express-mongodb
@@ -315,17 +337,13 @@ https://github.com/bezkoder/node-express-mongodb
 Result:
 
 * Dockerfile Generated
-* Docker Image Built
+* Docker Image Built Successfully
 * Container Started
-* Health Check Passed
-
-Note:
-
-* Runtime verification may fail if MongoDB service is unavailable.
+* Health Verification Passed
 
 ---
 
-#### RealWorld Express Example
+## Repository 2
 
 ```text
 https://github.com/gothinkster/node-express-realworld-example-app
@@ -334,15 +352,36 @@ https://github.com/gothinkster/node-express-realworld-example-app
 Result:
 
 * Dockerfile Generated
-* Docker Image Built
-* Container Started
-* Health Check Passed
+* Docker Image Built Successfully
+* Runtime Execution Attempted
+
+Note:
+
+Repository requires additional runtime dependencies such as Prisma initialization and environment configuration.
 
 ---
 
-### Failure Handling Tests
+## Repository 3
 
-#### Invalid Repository
+```text
+https://github.com/expressjs/express
+```
+
+Result:
+
+* Dockerfile Generated
+* Docker Image Built Successfully
+* Runtime Execution Attempted
+
+Note:
+
+Express is primarily a framework/library repository rather than a standalone deployable application.
+
+---
+
+# Failure Handling Tests
+
+## Invalid Repository
 
 ```text
 https://github.com/abcxyz123456/notfound
@@ -356,38 +395,39 @@ Repository Not Found
 
 ---
 
-#### Monorepo Repository
+# LLM / AI Integration
 
-```text
-https://github.com/ChandrapalParmar/DockerForge
-```
+The initial design explored LLM-based Dockerfile generation.
 
-Result:
+For reliability and deterministic execution, the current implementation uses repository analysis, Docker build validation, runtime verification, and retry-based correction mechanisms.
 
-```text
-Build Failure Detected
-Monorepo Limitation Identified
-```
+Future versions can integrate:
+
+* OpenAI
+* Gemini
+* OpenRouter
+
+for intelligent Dockerfile generation and automated runtime error reasoning.
 
 ---
 
-## Error Handling
+# Error Handling
 
 DockerForge currently handles:
 
-* Invalid GitHub URLs
+* Invalid Repository URLs
 * Repository Clone Failures
 * Docker Build Failures
 * Container Startup Failures
 * Missing Entry Files
-* Missing Start Script
+* Missing Start Scripts
 * Missing index.js
-* Health Check Failures
 * Runtime Verification Failures
+* Health Verification Failures
 
 ---
 
-## Known Limitations
+# Known Limitations
 
 Current version primarily supports Node.js repositories.
 
@@ -398,49 +438,53 @@ Not fully supported:
 * .NET Projects
 * Go Projects
 * Monorepo Structures
-* Projects requiring external databases
-* Complex microservice architectures
-* Prisma projects requiring additional setup commands
+* External Database Dependencies
+* Complex Microservice Architectures
+* Prisma-based Runtime Setup
+* Environment Variable Dependent Applications
+* Dynamic Port Discovery
+* docker-compose.yml Generation
 
 ---
 
-## Future Enhancements
+# Future Enhancements
 
 * AI-Powered Dockerfile Generation
+* OpenAI / Gemini Integration
+* Automatic Runtime Error Reasoning
 * Multi-Language Support
-* Monorepo Detection Support
+* Monorepo Detection
 * Automatic Port Detection
 * Database Dependency Detection
-* Prisma Generate Support
+* Prisma Support
 * Multi-Stage Docker Builds
 * Container Log Analysis
-* Kubernetes Deployment Support
+* Kubernetes Deployment
 * CI/CD Integration
 
 ---
 
-## Screenshots
+# Screenshots
 
-Add screenshots here:
+Add screenshots of:
 
 * Home Page
 * Dockerfile Generation
 * Build Logs
 * Container Status
-* Health Check
-* Response Verification
+* Health Verification
 
 ---
 
-## Author
+# Author
 
-**Chandrapal Parmar**
+Chandrapal Parmar
 
 * MERN Stack Developer
 * NIT Kurukshetra
 
 ---
 
-## License
+# License
 
 This project was created for educational and assessment purposes.
